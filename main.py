@@ -1,4 +1,4 @@
-##pip install colorama
+##pip install colorama requests urlib3 wmi
 
 import urllib3
 urllib3.disable_warnings()
@@ -14,16 +14,22 @@ Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
 Style: DIM, NORMAL, BRIGHT, RESET_ALL
 """
 
+import LauncherInfo
+
+
+
+
+
+
 headers = {
-    'Accept' : 'application/json',
-    'Authorization' : 'Basic cmlvdDpmUTBEVzVDWUE0a0d2eFZnSEVqYzB3'
+    'Accept' : 'application/json'
 }
 
 def rqget(url, headers):
-    url='https://127.0.0.1:51988'+url
+    url='https://127.0.0.1:52571'+url
     return requests.get(url, headers=headers, verify=False)
 def rqpost(url, headers):
-    url='https://127.0.0.1:51988'+url
+    url='https://127.0.0.1:52571'+url
     return requests.post(url, headers=headers, verify=False)
 
 def CheckLauncherScale():
@@ -37,6 +43,6 @@ def CheckLauncherScale():
         
 
 
-print('Launcher Size: ['+ CheckLauncherScale() + Fore.RESET + ']')
-
-#print(CheckLauncherScale())
+#print('Launcher Size: ['+ CheckLauncherScale() + Fore.RESET + ']')
+a = requests.get("https://127.0.0.1:53725/riotclient/zoom-scale", auth=('riot', 'a8VqRTIPF00aodgbmyEtkg'), headers=headers, verify=False).text
+print(a)
