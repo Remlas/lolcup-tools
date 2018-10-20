@@ -1,4 +1,4 @@
-##pip install colorama requests urlib3 wmi
+##pip install colorama requests wmi pywin32
 
 import urllib3
 urllib3.disable_warnings()
