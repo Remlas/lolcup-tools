@@ -14,7 +14,7 @@ class LoLDirectory(object):
         print("Process found! Trying to get it's path")
         if process.ExecutablePath:
           LolDir = process.ExecutablePath
-          LolDir = LolDir.rsplit('\\', 7)[0]
+          LolDir = LolDir.rsplit('\\', 7)[0] #remove file name from directory and move to main folder
           Found = True
         else:
           print("Cannot access process path information! (Launcher was probably launched as administrator or) ")
@@ -28,15 +28,20 @@ class LoLDirectory(object):
 
   LolDir = LolDir.replace('\\', '/') #Linux-like slashes rulez!
 
-print(LoLDirectory.LolDir)
-lockfile = open(LoLDirectory.LolDir + "/lockfile", "r") #Open 'lockfile' inside LoL Directory as read-only
+class LauncherCredentials(object):
+  Port = None
+  Pass = None
+  try:
+    lockfile = open(LoLDirectory.LolDir + "/lockfile", "r") #Open 'lockfile' inside LoL Directory as read-only
 
-for line in lockfile: 
-    fields = line.split(":")    #Split fields seperated by ":" in lockfile to array
-    ClientPort = fields[2]      #Port number is 3rd information in lockfile
-    ClientPass = fields[3]      #and Password is 4th
+    for line in lockfile: 
+        fields = line.split(":")    #Split fields seperated by ":" in lockfile to array
+        Port = fields[2]      #Port number is 3rd information in lockfile
+        Pass = fields[3]      #and Password is 4th
 
-lockfile.close()                #Make memory FREE! :D 
+    lockfile.close()                #Make memory FREE! :D 
+  except(FileNotFoundError):
+    print("File not Found! Launcher is not opened or can't access it's lockfile (maybe directory is wrong?) ")
 
-print(ClientPass)
-print(ClientPort)
+print(LauncherCredentials.Pass)
+print(LauncherCredentials.Port)
