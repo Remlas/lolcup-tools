@@ -1,6 +1,9 @@
 import wmi
 import winreg
 
+from colorama import init as coloramainit
+from colorama import Fore, Back, Style
+
 class LoLDirectory(object):
   LolDir = None #It's defined - less bugs
   try: #First check Windows Registry
@@ -28,7 +31,7 @@ class LoLDirectory(object):
 
   LolDir = LolDir.replace('\\', '/') #Linux-like slashes rulez!
 
-class LauncherCredentials(object):
+class Credentials(object):
   Port = None
   Pass = None
   try:
@@ -36,12 +39,9 @@ class LauncherCredentials(object):
 
     for line in lockfile: 
         fields = line.split(":")    #Split fields seperated by ":" in lockfile to array
-        Port = fields[2]      #Port number is 3rd information in lockfile
-        Pass = fields[3]      #and Password is 4th
+        Port = fields[2]            #Port number is 3rd information in lockfile
+        Pass = fields[3]            #and Password is 4th
 
     lockfile.close()                #Make memory FREE! :D 
   except(FileNotFoundError):
     print("File not Found! Launcher is not opened or can't access it's lockfile (maybe directory is wrong?) ")
-
-print(LauncherCredentials.Pass)
-print(LauncherCredentials.Port)

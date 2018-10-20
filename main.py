@@ -4,6 +4,7 @@ import urllib3
 urllib3.disable_warnings()
 
 import requests
+import sys
 
 from colorama import init as coloramainit
 from colorama import Fore, Back, Style
@@ -15,22 +16,20 @@ Style: DIM, NORMAL, BRIGHT, RESET_ALL
 """
 
 import LauncherInfo
-
-
-
-
-
+if (LauncherInfo.Credentials.Port is None) or (LauncherInfo.Credentials.Pass is None):
+    print(Fore.RED + "Cannot find informations about connection o League of Legends Launcher. Exiting..." + Fore.RESET)
+    sys.exit()
 
 headers = {
     'Accept' : 'application/json'
 }
 
 def rqget(url, headers):
-    url='https://127.0.0.1:52571'+url
-    return requests.get(url, headers=headers, verify=False)
+    url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
+    return requests.get(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), verify=False)
 def rqpost(url, headers):
-    url='https://127.0.0.1:52571'+url
-    return requests.post(url, headers=headers, verify=False)
+    url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
+    return requests.post(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), verify=False)
 
 def CheckLauncherScale():
     LauncherScale = rqget('/riotclient/zoom-scale', headers)
@@ -43,6 +42,4 @@ def CheckLauncherScale():
         
 
 
-#print('Launcher Size: ['+ CheckLauncherScale() + Fore.RESET + ']')
-a = requests.get("https://127.0.0.1:53725/riotclient/zoom-scale", auth=('riot', 'a8VqRTIPF00aodgbmyEtkg'), headers=headers, verify=False).text
-print(a)
+print('Launcher Size: ['+ CheckLauncherScale() + Fore.RESET + ']')
