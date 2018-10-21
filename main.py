@@ -31,6 +31,9 @@ def rqget(url):
 def rqpost(url, data = None):
     url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
     return requests.post(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), data=data, verify=False)
+def rqpatch(url, data = None):
+    url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
+    return requests.patch(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), data=data, verify=False)
 
 def jsonget(url, key):
     return json.loads(rqget(url).text)[key]
@@ -59,8 +62,25 @@ if (rqget('/lol-login/v1/session').status_code) == 404:
     rqpost('/lol-login/v1/session', json.dumps(LoginCredentials.data))
 
 if (jsonget('/lol-login/v1/session','username')) != 'zsltv':
+    print("Account: [" + Fore.RED + "ERROR" + Fore.RESET + "]")
     print(Fore.RED + Style.BRIGHT + "You are not using accout dedicated for streaming!\n" + Style.NORMAL + "You have been warned!!!" + Style.RESET_ALL)
     rqpost('/player-notifications/v1/notifications', json.dumps({"critical": "true", "dismissible": "true", "iconUrl": "https://cdn4.iconfinder.com/data/icons/ninja-emoji/512/ninja-17-512.png", "state": "unread", "titleKey": "", "type": ""}))
     rqpost('/lol-simple-dialog-messages/v1/messages', json.dumps({"msgBody": ["You are not logged in on dedicated stream account!"],"msgType": "Wrong accout"}))
+else:
+    print("Account:             [" + Fore.GREEN + "OK" + Fore.RESET + "]")
 
-print('Launcher Size: ['+ CheckLauncherScale() + Fore.RESET + ']')
+
+print('Launcher Size:       ['+ CheckLauncherScale() + Fore.RESET + ']')
+
+##Launcehr Settings
+
+import GameSettings
+if (rqget('/lol-game-settings/v1/game-settings').json()) != GameSettings.conf:
+    detectedconf = rqget('/lol-game-settings/v1/game-settings').text
+    GameSettings.confbackup(detectedconf)
+    rqpatch('/lol-game-settings/v1/game-settings', json.dumps(GameSettings.conf))
+    print("Game Settings:       [" + Fore.YELLOW + "Fixed" + Fore.RESET + "]")
+    print("Your Config probably didn't match our config, it has been overwritten please check it.")
+    
+else:
+    print("Game Settings:       [" + Fore.GREEN + "OK" + Fore.RESET + "]")

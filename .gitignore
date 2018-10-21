@@ -105,3 +105,5 @@ venv.bak/
 
 # files with secret informations
 account.txt
+#backup of detected conf
+GameSettingsDetected.backup
