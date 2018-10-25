@@ -35,7 +35,7 @@ def rqpatch(url, data = None):
     url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
     return requests.patch(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), data=data, verify=False)
 
-def jsonget(url, key):
+def jsonget(url, key = None):
     return json.loads(rqget(url).text)[key]
 
 ##Check Region Settings
