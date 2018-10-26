@@ -84,3 +84,10 @@ if (rqget('/lol-game-settings/v1/game-settings').json()) != GameSettings.conf:
     
 else:
     print("Game Settings:       [" + Fore.GREEN + "OK" + Fore.RESET + "]")
+
+
+###Saving champion image to folder, selected by ID
+ChampID = 2
+AllChamps = rqget("/lol-champions/v1/inventories/27667337/champions").json()
+tileURL = (AllChamps[ChampID]['skins'][0]['tilePath'])
+open('obs/1.jpg', 'wb').write(rqget(tileURL).content)

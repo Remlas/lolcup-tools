@@ -107,3 +107,5 @@ venv.bak/
 account.txt
 #backup of detected conf
 GameSettingsDetected.backup
+#dir with OBS files
+obs/*
