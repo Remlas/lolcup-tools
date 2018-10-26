@@ -1,4 +1,4 @@
-##pip3 install colorama requests wmi pywin32
+##pip3 install urllib3 colorama requests wmi pywin32 
 
 import urllib3
 urllib3.disable_warnings()
@@ -38,6 +38,17 @@ def rqpatch(url, data = None):
 def jsonget(url, key = None):
     return json.loads(rqget(url).text)[key]
 
+def ChampionTileURL(ChampID, skinID = 0):
+    return AllChamps[ChampID]['skins'][skinID]['tilePath']
+
+def showchamp():
+    return jsonget('/lol-champ-select/v1/session')
+
+def banchamps(greatInt):
+    if rqget('/lol-champ-select/v1/session').status_code == 200:
+        if showchamp()['actions'][greatInt][0]['completed'] == True:
+            print("dupa")
+
 ##Check Region Settings
 region = jsonget('/riotclient/region-locale','region')
 locale = jsonget('/riotclient/region-locale','locale')
@@ -68,7 +79,7 @@ if (jsonget('/lol-login/v1/session','username')) != 'zsltv':
     rqpost('/lol-simple-dialog-messages/v1/messages', json.dumps({"msgBody": ["You are not logged in on dedicated stream account!"],"msgType": "Wrong accout"}))
 else:
     print("Account:             [" + Fore.GREEN + "OK" + Fore.RESET + "]")
-
+summonerId = jsonget('/lol-login/v1/session', 'summonerId')
 
 print('Launcher Size:       ['+ CheckLauncherScale() + Fore.RESET + ']')
 
@@ -87,7 +98,17 @@ else:
 
 
 ###Saving champion image to folder, selected by ID
-ChampID = 2
-AllChamps = rqget("/lol-champions/v1/inventories/27667337/champions").json()
-tileURL = (AllChamps[ChampID]['skins'][0]['tilePath'])
-open('obs/1.jpg', 'wb').write(rqget(tileURL).content)
+ChampID = 30
+AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
+
+#open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
+
+ChampID = showchamp()['actions'][countChamps][0]['championId']
+open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
+"""
+countChamps = 0
+while True:
+    banchamps(countChamps)
+    if showchamp()['actions'][countChamps][0]['completed'] == True:
+        open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(0)).content)
+"""
