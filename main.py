@@ -68,7 +68,7 @@ def CheckLauncherScale():
     if LauncherScale.text == '1.25':
         return Fore.GREEN + 'OK'
     else:
-        #rqpost('/riotclient/zoom-scale?newZoomScale=1.25')
+        rqpost('/riotclient/zoom-scale?newZoomScale=1.25')
         return Fore.YELLOW + 'Fixed'
 
 if (rqget('/lol-login/v1/session').status_code) == 404:
@@ -78,8 +78,8 @@ if (rqget('/lol-login/v1/session').status_code) == 404:
 if (jsongetkey('/lol-login/v1/session','username')) != 'zsltv':
     print("Account: [" + Fore.RED + "ERROR" + Fore.RESET + "]")
     print(Fore.RED + Style.BRIGHT + "You are not using accout dedicated for streaming!\n" + Style.NORMAL + "You have been warned!!!" + Style.RESET_ALL)
-    rqpost('/player-notifications/v1/notifications', json.dumps({"critical": "true", "dismissible": "true", "iconUrl": "https://cdn4.iconfinder.com/data/icons/ninja-emoji/512/ninja-17-512.png", "state": "unread", "titleKey": "", "type": ""}))
-    rqpost('/lol-simple-dialog-messages/v1/messages', json.dumps({"msgBody": ["You are not logged in on dedicated stream account!"],"msgType": "Wrong accout"}))
+    #rqpost('/player-notifications/v1/notifications', json.dumps({"critical": "true", "dismissible": "true", "iconUrl": "https://cdn4.iconfinder.com/data/icons/ninja-emoji/512/ninja-17-512.png", "state": "unread", "titleKey": "", "type": ""}))
+    #rqpost('/lol-simple-dialog-messages/v1/messages', json.dumps({"msgBody": ["You are not logged in on dedicated stream account!"],"msgType": "Wrong accout"}))
 else:
     print("Account:             [" + Fore.GREEN + "OK" + Fore.RESET + "]")
 summonerId = jsongetkey('/lol-login/v1/session', 'summonerId')
@@ -106,8 +106,9 @@ AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champio
 
 #open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
 countChamps = 0
-ChampID = showchamp()['actions'][countChamps][0]['championId']
-open('obs/Champ1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
+#ChampID = showchamp()['actions'][countChamps][0]['championId']
+#open('obs/Champ1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
+
 """
 
 while True:
@@ -115,3 +116,8 @@ while True:
     if showchamp()['actions'][countChamps][0]['completed'] == True:
         open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(0)).content)
 """
+
+###### TO DO
+##### Lobby
+#### Chamption Select
+### AfterMatch Stats
