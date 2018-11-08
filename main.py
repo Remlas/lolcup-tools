@@ -1,4 +1,4 @@
-##pip3 install urllib3 colorama requests wmi pywin32 
+##pip3 install urllib3 colorama requests wmi pywin32 mysql-connector
 
 import urllib3
 urllib3.disable_warnings()
@@ -6,6 +6,9 @@ urllib3.disable_warnings()
 import requests
 import json
 import sys
+
+import mysql.connector 
+import MySQL
 
 from colorama import init as coloramainit
 from colorama import Fore, Back, Style
@@ -68,7 +71,7 @@ def CheckLauncherScale():
     if LauncherScale.text == '1.25':
         return Fore.GREEN + 'OK'
     else:
-        rqpost('/riotclient/zoom-scale?newZoomScale=1.25')
+        #rqpost('/riotclient/zoom-scale?newZoomScale=1.25')
         return Fore.YELLOW + 'Fixed'
 
 if (rqget('/lol-login/v1/session').status_code) == 404:
@@ -92,7 +95,7 @@ import GameSettings
 if (rqget('/lol-game-settings/v1/game-settings').json()) != GameSettings.conf:
     detectedconf = rqget('/lol-game-settings/v1/game-settings').text
     GameSettings.confbackup(detectedconf)
-    rqpatch('/lol-game-settings/v1/game-settings', json.dumps(GameSettings.conf))
+    #rqpatch('/lol-game-settings/v1/game-settings', json.dumps(GameSettings.conf))
     print("Game Settings:       [" + Fore.YELLOW + "Fixed" + Fore.RESET + "]")
     print("Your Config probably didn't match our config, it has been overwritten please check it.")
     
@@ -101,11 +104,11 @@ else:
 
 
 ###Saving champion image to folder, selected by ID
-ChampID = 30
-AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
+#ChampID = 30
+#AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
 
 #open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
-countChamps = 0
+#countChamps = 0
 #ChampID = showchamp()['actions'][countChamps][0]['championId']
 #open('obs/Champ1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
 
@@ -119,5 +122,9 @@ while True:
 
 ###### TO DO
 ##### Lobby
+
+LobbyInfo = jsonget("/lol-lobby/v2/lobby")
+print(LobbyInfo['gameConfig']['customLobbyName'])
+
 #### Chamption Select
 ### AfterMatch Stats
