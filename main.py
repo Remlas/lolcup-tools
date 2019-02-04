@@ -1,59 +1,104 @@
-##pip3 install urllib3 colorama requests wmi pywin32 mysql-connector
+### DEPENCIES ###
+##pip3 install urllib3 colorama requests wmi pywin32
 
+### CONFIGURATION ###
+AutoLogin = True
+UseRemote = True
+GetCredientalsFromRemote = False
+RemoteMachineIP = "192.168.1.124"
+LeagueClientIP = "127.0.0.1"
+LeagueClientPort = ""
+Login = 'riot'
+Password = ''
+
+## VARS
+LeagueClientAdress = LeagueClientIP + ":" + str(LeagueClientPort)
+LeagueClientURL = "https://"+LeagueClientAdress
+
+def UpdateLeagueClientURL():
+    global LeagueClientAdress
+    global LeagueClientURL
+    LeagueClientAdress = LeagueClientIP + ":" + LeagueClientPort
+    LeagueClientURL = "https://"+LeagueClientAdress
+
+## VARS for Requests
+headers = {
+    "Accept" : "application/json"
+}
+if UseRemote == True:
+    proxies = {
+    "https": "http://"+RemoteMachineIP+":808"
+    }
+else:
+    proxies = None
+
+
+#Disable insecure connection warning
 import urllib3
 urllib3.disable_warnings()
 
+#Import Important stuff
 import requests
 import json
 import sys
-
-import mysql.connector 
-import MySQL
-
+import socket
+import time
 from colorama import init as coloramainit
 from colorama import Fore, Back, Style
 coloramainit()
-"""
-Fore: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-Back: BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.
-Style: DIM, NORMAL, BRIGHT, RESET_ALL
-"""
 
-import LauncherInfo
-if (LauncherInfo.Credentials.Port is None) or (LauncherInfo.Credentials.Pass is None):
-    print(Fore.RED + "Cannot find informations about connection to League of Legends Launcher. Exiting..." + Fore.RESET)
-    sys.exit()
+if GetCredientalsFromRemote == True:
 
-headers = {
-    'Accept' : 'application/json'
-}
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM) 
+
+    server = RemoteMachineIP
+    port = 25565
+    s.connect((server, port))                               
+    msg = s.recv(1024)
+    s.close()
+
+    credientals = json.loads(msg.decode('utf-8'))
+
+    LeagueClientPort = str(credientals['Port'])
+    Password = credientals['Password']
+    UpdateLeagueClientURL()
+
+    LastCredientalsFile = open("lastportpass.txt", "w")
+    LastCredientalsFile.write(LeagueClientPort+"\n")
+    LastCredientalsFile.write(Password)
+    LastCredientalsFile.close
+
+else: #GET LOCAL VALUES
+
+    LastCredientalsFile = open("lastportpass.txt", "r")
+    LeagueClientPort = str.strip(LastCredientalsFile.readline())
+    Password = str.strip(LastCredientalsFile.readline())
+    LastCredientalsFile.close()
+    UpdateLeagueClientURL()
+    #print(Fore.RED + "Cannot find informations about connection to League of Legends Launcher. Exiting..." + Fore.RESET)
+
+
+#Create session
+s = requests.Session()
+s.auth = (Login, Password)
+s.headers = headers
+s.verify = False
+s.proxies = proxies
+
+
 
 def rqget(url):
-    url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
-    return requests.get(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), verify=False)
+    return s.get(LeagueClientURL+url)
 def rqpost(url, data = None):
-    url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
-    return requests.post(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), data=data, verify=False)
+    return s.post(LeagueClientURL+url, data=data)
 def rqpatch(url, data = None):
-    url='https://127.0.0.1:'+LauncherInfo.Credentials.Port+url
-    return requests.patch(url, headers=headers, auth=('riot', LauncherInfo.Credentials.Pass), data=data, verify=False)
+    return s.patch(LeagueClientURL+url, data=data)
 
 def jsonget(url):
     return json.loads(rqget(url).text)
 
 def jsongetkey(url, key = None):
     return json.loads(rqget(url).text)[key]
-
-def ChampionTileURL(ChampID, skinID = 0):
-    return AllChamps[ChampID]['skins'][skinID]['tilePath']
-
-def showchamp():
-    return jsonget('/lol-champ-select/v1/session')
-
-def banchamps(greatInt):
-    if rqget('/lol-champ-select/v1/session').status_code == 200:
-        if showchamp()['actions'][greatInt][0]['completed'] == True:
-            print("dupa")
 
 ##Check Region Settings
 region = jsongetkey('/riotclient/region-locale','region')
@@ -71,7 +116,7 @@ def CheckLauncherScale():
     if LauncherScale.text == '1.25':
         return Fore.GREEN + 'OK'
     else:
-        #rqpost('/riotclient/zoom-scale?newZoomScale=1.25')
+        rqpost('/riotclient/zoom-scale?newZoomScale=1.25')
         return Fore.YELLOW + 'Fixed'
 
 if (rqget('/lol-login/v1/session').status_code) == 404:
@@ -81,33 +126,34 @@ if (rqget('/lol-login/v1/session').status_code) == 404:
 if (jsongetkey('/lol-login/v1/session','username')) != 'zsltv':
     print("Account: [" + Fore.RED + "ERROR" + Fore.RESET + "]")
     print(Fore.RED + Style.BRIGHT + "You are not using accout dedicated for streaming!\n" + Style.NORMAL + "You have been warned!!!" + Style.RESET_ALL)
-    #rqpost('/player-notifications/v1/notifications', json.dumps({"critical": "true", "dismissible": "true", "iconUrl": "https://cdn4.iconfinder.com/data/icons/ninja-emoji/512/ninja-17-512.png", "state": "unread", "titleKey": "", "type": ""}))
-    #rqpost('/lol-simple-dialog-messages/v1/messages', json.dumps({"msgBody": ["You are not logged in on dedicated stream account!"],"msgType": "Wrong accout"}))
 else:
     print("Account:             [" + Fore.GREEN + "OK" + Fore.RESET + "]")
 summonerId = jsongetkey('/lol-login/v1/session', 'summonerId')
 
 print('Launcher Size:       ['+ CheckLauncherScale() + Fore.RESET + ']')
 
-##Launcehr Settings
+### CHAMPIONS AND SKINS VARS ###
 
-import GameSettings
-if (rqget('/lol-game-settings/v1/game-settings').json()) != GameSettings.conf:
-    detectedconf = rqget('/lol-game-settings/v1/game-settings').text
-    GameSettings.confbackup(detectedconf)
-    #rqpatch('/lol-game-settings/v1/game-settings', json.dumps(GameSettings.conf))
-    print("Game Settings:       [" + Fore.YELLOW + "Fixed" + Fore.RESET + "]")
-    print("Your Config probably didn't match our config, it has been overwritten please check it.")
-    
-else:
-    print("Game Settings:       [" + Fore.GREEN + "OK" + Fore.RESET + "]")
+AllChampionsDictionary = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
 
 
 ###Saving champion image to folder, selected by ID
-#ChampID = 30
-#AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
 
-#open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
+#AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
+def SelectChampion(id):
+    for champ in AllChampionsDictionary:
+        if (champ['id']) == id:
+            return champ
+
+def ChampionTileURL(ChampID, skinID = 0):
+    return SelectChampion(ChampID)['skins'][skinID]['tilePath']
+
+def ChampionTileImage(ChampID, skinID = 0):
+    return rqget(ChampionTileURL(ChampID, skinID)).content
+
+def SaveTile(filename, ChampID, skinID = 0):
+    open('obs/'+filename+'.jpg', 'wb').write(ChampionTileImage(ChampID, skinID))
+
 #countChamps = 0
 #ChampID = showchamp()['actions'][countChamps][0]['championId']
 #open('obs/Champ1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
@@ -120,11 +166,23 @@ while True:
         open('obs/1.jpg', 'wb').write(rqget(ChampionTileURL(0)).content)
 """
 
+### BANNING PHASE ###
+
+while True:
+    LastAction = rqget('/lol-champ-select/v1/session').json()["actions"][-1][0]
+    
+    if LastAction["type"] == "ban":
+        if LastAction["championId"] == 0:
+            pass
+        else:
+            SaveTile("ban"+str(LastAction["pickTurn"]), LastAction["championId"])
+
+
+
+
 ###### TO DO
 ##### Lobby
 
-LobbyInfo = jsonget("/lol-lobby/v2/lobby")
-print(LobbyInfo['gameConfig']['customLobbyName'])
 
 #### Chamption Select
 ### AfterMatch Stats
