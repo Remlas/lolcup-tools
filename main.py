@@ -3,7 +3,8 @@
 
 ### CONFIGURATION ###
 AutoLogin = True
-UseRemote = True
+UseRemote = False
+GetCredientalsFromLocal = True
 GetCredientalsFromRemote = False
 RemoteMachineIP = "192.168.1.124"
 LeagueClientIP = "127.0.0.1"
@@ -67,6 +68,16 @@ if GetCredientalsFromRemote == True:
     LastCredientalsFile.write(LeagueClientPort+"\n")
     LastCredientalsFile.write(Password)
     LastCredientalsFile.close
+
+elif GetCredientalsFromLocal == True:
+    import LauncherInfo
+
+    LeagueClientPort = LauncherInfo.Credentials.Port
+    Password = LauncherInfo.Credentials.Pass
+
+    UpdateLeagueClientURL()
+
+
 
 else: #GET LOCAL VALUES
 
@@ -169,7 +180,9 @@ while True:
 ### BANNING PHASE ###
 
 while True:
-    LastAction = rqget('/lol-champ-select/v1/session').json()["actions"][-1][0]
+    Session = rqget('/lol-champ-select/v1/session').json()
+    AllActions = rqget('/lol-champ-select/v1/session').json()["actions"][1]
+    LastAction = AllActions[-1][0]
     
     if LastAction["type"] == "ban":
         if LastAction["championId"] == 0:
