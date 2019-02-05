@@ -3,9 +3,9 @@
 
 ### CONFIGURATION ###
 AutoLogin = True
-UseRemote = False
-GetCredientalsFromLocal = True
-GetCredientalsFromRemote = False
+UseRemote = True
+GetCredientalsFromLocal = False
+GetCredientalsFromRemote = True
 RemoteMachineIP = "192.168.1.124"
 LeagueClientIP = "127.0.0.1"
 LeagueClientPort = ""
@@ -163,7 +163,8 @@ def ChampionTileImage(ChampID, skinID = 0):
     return rqget(ChampionTileURL(ChampID, skinID)).content
 
 def SaveTile(filename, ChampID, skinID = 0):
-    open('obs/'+filename+'.jpg', 'wb').write(ChampionTileImage(ChampID, skinID))
+    if ChampID != 0:
+        open('obs/'+filename+'.jpg', 'wb').write(ChampionTileImage(ChampID, skinID))
 
 #countChamps = 0
 #ChampID = showchamp()['actions'][countChamps][0]['championId']
@@ -179,17 +180,40 @@ while True:
 
 ### BANNING PHASE ###
 
+PicksAndBansDone = False
+
 while True:
     Session = rqget('/lol-champ-select/v1/session').json()
-    AllActions = rqget('/lol-champ-select/v1/session').json()["actions"][1]
+    AllActions = Session["actions"]
     LastAction = AllActions[-1][0]
     
-    if LastAction["type"] == "ban":
-        if LastAction["championId"] == 0:
-            pass
-        else:
-            SaveTile("ban"+str(LastAction["pickTurn"]), LastAction["championId"])
+    if PicksAndBansDone is not True:
+        print("Bans and Picks in Progress")
+        if LastAction["type"] == "ban":
+            if LastAction["championId"] == 0:
+                pass
+            else:
+                SaveTile("ban"+str(LastAction["id"]), LastAction["championId"])
+        elif LastAction["type"] == "pick":
+            if LastAction["championId"] == 0:
+                pass
+            else:
+                SaveTile("pick"+str(LastAction["actorCellId"]), LastAction["championId"])
+    if PicksAndBansDone = True:
+        SaveTile("pick"+str(Session["myTeam"][0]["cellId"]), Session["myTeam"][0]["championId"])
+        SaveTile("pick"+str(Session["myTeam"][1]["cellId"]), Session["myTeam"][1]["championId"])
+        SaveTile("pick"+str(Session["myTeam"][2]["cellId"]), Session["myTeam"][2]["championId"])
+        SaveTile("pick"+str(Session["myTeam"][3]["cellId"]), Session["myTeam"][3]["championId"])
+        SaveTile("pick"+str(Session["myTeam"][4]["cellId"]), Session["myTeam"][4]["championId"])
 
+        SaveTile("pick"+str(Session["theirTeam"][0]["cellId"]), Session["theirTeam"][0]["championId"])
+        SaveTile("pick"+str(Session["theirTeam"][1]["cellId"]), Session["theirTeam"][1]["championId"])
+        SaveTile("pick"+str(Session["theirTeam"][2]["cellId"]), Session["theirTeam"][2]["championId"])
+        SaveTile("pick"+str(Session["theirTeam"][3]["cellId"]), Session["theirTeam"][3]["championId"])
+        SaveTile("pick"+str(Session["theirTeam"][4]["cellId"]), Session["theirTeam"][4]["championId"])
+    
+    if LastAction["id"] == 20 and LastAction["completed"] == True:
+        PicksAndBansDone = True
 
 
 
