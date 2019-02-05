@@ -152,20 +152,26 @@ AllChampionsDictionary = rqget("/lol-champions/v1/inventories/" + str(summonerId
 
 #AllChamps = rqget("/lol-champions/v1/inventories/" + str(summonerId) + "/champions").json()
 def SelectChampion(id):
-    for champ in AllChampionsDictionary:
-        if (champ['id']) == id:
-            return champ
+    id = int(id)
+    if id != 0:
+        for champ in AllChampionsDictionary:
+            if (champ['id']) == id:
+                return champ
 
 def ChampionTileURL(ChampID, skinID = 0):
-    return SelectChampion(ChampID)['skins'][skinID]['tilePath']
+    if ChampID != 0:
+        if skinID == 0:
+            return SelectChampion(ChampID)['skins'][skinID]['tilePath']
+        else:
+            return SelectChampion(ChampID)['skins'][skinID-ChampID*1000]['tilePath']
 
 def ChampionTileImage(ChampID, skinID = 0):
-    return rqget(ChampionTileURL(ChampID, skinID)).content
+    if ChampID != 0:
+        return rqget(ChampionTileURL(ChampID, skinID)).content
 
 def SaveTile(filename, ChampID, skinID = 0):
     if ChampID != 0:
         open('obs/'+filename+'.jpg', 'wb').write(ChampionTileImage(ChampID, skinID))
-
 #countChamps = 0
 #ChampID = showchamp()['actions'][countChamps][0]['championId']
 #open('obs/Champ1.jpg', 'wb').write(rqget(ChampionTileURL(ChampID)).content)
@@ -199,18 +205,15 @@ while True:
                 pass
             else:
                 SaveTile("pick"+str(LastAction["actorCellId"]), LastAction["championId"])
-    if PicksAndBansDone = True:
-        SaveTile("pick"+str(Session["myTeam"][0]["cellId"]), Session["myTeam"][0]["championId"])
-        SaveTile("pick"+str(Session["myTeam"][1]["cellId"]), Session["myTeam"][1]["championId"])
-        SaveTile("pick"+str(Session["myTeam"][2]["cellId"]), Session["myTeam"][2]["championId"])
-        SaveTile("pick"+str(Session["myTeam"][3]["cellId"]), Session["myTeam"][3]["championId"])
-        SaveTile("pick"+str(Session["myTeam"][4]["cellId"]), Session["myTeam"][4]["championId"])
+    if PicksAndBansDone == True:
 
-        SaveTile("pick"+str(Session["theirTeam"][0]["cellId"]), Session["theirTeam"][0]["championId"])
-        SaveTile("pick"+str(Session["theirTeam"][1]["cellId"]), Session["theirTeam"][1]["championId"])
-        SaveTile("pick"+str(Session["theirTeam"][2]["cellId"]), Session["theirTeam"][2]["championId"])
-        SaveTile("pick"+str(Session["theirTeam"][3]["cellId"]), Session["theirTeam"][3]["championId"])
-        SaveTile("pick"+str(Session["theirTeam"][4]["cellId"]), Session["theirTeam"][4]["championId"])
+        for player in Session["myTeam"]:
+            SaveTile("pick"+str(player["cellId"]), player["championId"], player["selectedSkinId"])
+
+        for player in Session["theirTeam"]:
+            SaveTile("pick"+str(player["cellId"]), player["championId"], player["selectedSkinId"])
+
+        
     
     if LastAction["id"] == 20 and LastAction["completed"] == True:
         PicksAndBansDone = True
